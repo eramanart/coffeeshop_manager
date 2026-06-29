@@ -1,0 +1,323 @@
+{
+  "week_start": "2026-06-01",
+  "days": [
+    {
+      "date": "2026-06-01",
+      "dow_name": "Monday",
+      "forecast_total": "616.67",
+      "confidence": 82,
+      "slots": [
+        {
+          "name": "Opening",
+          "label": "08:00–11:00",
+          "needed": 2,
+          "assigned": [
+            {
+              "id": 1,
+              "name": "TestBarista"
+            }
+          ],
+          "uncovered": 1
+        },
+        {
+          "name": "Lunch peak",
+          "label": "11:00–14:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Afternoon",
+          "label": "14:00–17:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Evening",
+          "label": "17:00–21:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        }
+      ]
+    },
+    {
+      "date": "2026-06-02",
+      "dow_name": "Tuesday",
+      "forecast_total": "572.54",
+      "confidence": 82,
+      "slots": [
+        {
+          "name": "Opening",
+          "label": "08:00–11:00",
+          "needed": 2,
+          "assigned": [
+            {
+              "id": 1,
+              "name": "TestBarista"
+            }
+          ],
+          "uncovered": 1
+        },
+        {
+          "name": "Lunch peak",
+          "label": "11:00–14:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Afternoon",
+          "label": "14:00–17:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Evening",
+          "label": "17:00–21:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        }
+      ]
+    },
+    {
+      "date": "2026-06-03",
+      "dow_name": "Wednesday",
+      "forecast_total": "599.70",
+      "confidence": 82,
+      "slots": [
+        {
+          "name": "Opening",
+          "label": "08:00–11:00",
+          "needed": 2,
+          "assigned": [
+            {
+              "id": 1,
+              "name": "TestBarista"
+            }
+          ],
+          "uncovered": 1
+        },
+        {
+          "name": "Lunch peak",
+          "label": "11:00–14:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Afternoon",
+          "label": "14:00–17:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Evening",
+          "label": "17:00–21:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        }
+      ]
+    },
+    {
+      "date": "2026-06-04",
+      "dow_name": "Thursday",
+      "forecast_total": "631.77",
+      "confidence": 82,
+      "slots": [
+        {
+          "name": "Opening",
+          "label": "08:00–11:00",
+          "needed": 2,
+          "assigned": [
+            {
+              "id": 1,
+              "name": "TestBarista"
+            }
+          ],
+          "uncovered": 1
+        },
+        {
+          "name": "Lunch peak",
+          "label": "11:00–14:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Afternoon",
+          "label": "14:00–17:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Evening",
+          "label": "17:00–21:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        }
+      ]
+    },
+    {
+      "date": "2026-06-05",
+      "dow_name": "Friday",
+      "forecast_total": "599.18",
+      "confidence": 82,
+      "slots": [
+        {
+          "name": "Opening",
+          "label": "08:00–11:00",
+          "needed": 2,
+          "assigned": [
+            {
+              "id": 1,
+              "name": "TestBarista"
+            }
+          ],
+          "uncovered": 1
+        },
+        {
+          "name": "Lunch peak",
+          "label": "11:00–14:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Afternoon",
+          "label": "14:00–17:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Evening",
+          "label": "17:00–21:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        }
+      ]
+    },
+    {
+      "date": "2026-06-06",
+      "dow_name": "Saturday",
+      "forecast_total": "860.72",
+      "confidence": 82,
+      "slots": [
+        {
+          "name": "Opening",
+          "label": "08:00–11:00",
+          "needed": 2,
+          "assigned": [
+            {
+              "id": 1,
+              "name": "TestBarista"
+            }
+          ],
+          "uncovered": 1
+        },
+        {
+          "name": "Lunch peak",
+          "label": "11:00–14:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Afternoon",
+          "label": "14:00–17:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Evening",
+          "label": "17:00–21:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        }
+      ]
+    },
+    {
+      "date": "2026-06-07",
+      "dow_name": "Sunday",
+      "forecast_total": "914.33",
+      "confidence": 82,
+      "slots": [
+        {
+          "name": "Opening",
+          "label": "08:00–11:00",
+          "needed": 2,
+          "assigned": [
+            {
+              "id": 1,
+              "name": "TestBarista"
+            }
+          ],
+          "uncovered": 1
+        },
+        {
+          "name": "Lunch peak",
+          "label": "11:00–14:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Afternoon",
+          "label": "14:00–17:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        },
+        {
+          "name": "Evening",
+          "label": "17:00–21:00",
+          "needed": 3,
+          "assigned": [],
+          "uncovered": 3
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "Mon 01: Opening needs 2 — only 1 available.",
+    "Mon 01: Lunch peak needs 3 — only 0 available.",
+    "Mon 01: Afternoon needs 3 — only 0 available.",
+    "Mon 01: Evening needs 3 — only 0 available.",
+    "Tue 02: Opening needs 2 — only 1 available.",
+    "Tue 02: Lunch peak needs 3 — only 0 available.",
+    "Tue 02: Afternoon needs 3 — only 0 available.",
+    "Tue 02: Evening needs 3 — only 0 available.",
+    "Wed 03: Opening needs 2 — only 1 available.",
+    "Wed 03: Lunch peak needs 3 — only 0 available.",
+    "Wed 03: Afternoon needs 3 — only 0 available.",
+    "Wed 03: Evening needs 3 — only 0 available.",
+    "Thu 04: Opening needs 2 — only 1 available.",
+    "Thu 04: Lunch peak needs 3 — only 0 available.",
+    "Thu 04: Afternoon needs 3 — only 0 available.",
+    "Thu 04: Evening needs 3 — only 0 available.",
+    "Fri 05: Opening needs 2 — only 1 available.",
+    "Fri 05: Lunch peak needs 3 — only 0 available.",
+    "Fri 05: Afternoon needs 3 — only 0 available.",
+    "Fri 05: Evening needs 3 — only 0 available.",
+    "Sat 06: Opening needs 2 — only 1 available.",
+    "Sat 06: Lunch peak needs 3 — only 0 available.",
+    "Sat 06: Afternoon needs 3 — only 0 available.",
+    "Sat 06: Evening needs 3 — only 0 available.",
+    "Sun 07: Opening needs 2 — only 1 available.",
+    "Sun 07: Lunch peak needs 3 — only 0 available.",
+    "Sun 07: Afternoon needs 3 — only 0 available.",
+    "Sun 07: Evening needs 3 — only 0 available."
+  ],
+  "total_assigned": 7
+}

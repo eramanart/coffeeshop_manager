@@ -1,0 +1,15 @@
+# CoffeeManager-OS dashboard — Streamlit config.
+# Loaded automatically when `streamlit run` is launched from python/.
+# Security posture (CLAUDE.md): localhost only, never public/plain-HTTP.
+
+[server]
+# Bind to loopback only. Do NOT change to 0.0.0.0 without an HTTPS reverse proxy.
+address = "127.0.0.1"
+port = 8501
+headless = true          # don't auto-open a browser tab on launch
+
+[browser]
+gatherUsageStats = false # no telemetry from a financial/PII app
+
+[theme]
+base = "light"

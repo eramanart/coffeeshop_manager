@@ -1,0 +1,15 @@
+To: orders@pienozvaigzdes.lt
+Subject: Purchase Order — Whole milk
+
+Dear Pieno Žvaigždės,
+
+Please supply the following:
+
+  Item:     Whole milk
+  Quantity: 50.0 kg
+  Delivery: as soon as possible
+
+Best regards,
+CoffeeShop Management
+
+[AWAITING OWNER APPROVAL — DO NOT SEND]

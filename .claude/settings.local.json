@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd C:\\\\Users\\\\eligi\\\\Desktop\\\\coffee_agent\\\\python; $env:PYTHONIOENCODING=\"utf-8\"; $env:DASHBOARD_USER=\"\"; $env:DASHBOARD_PASSWORD=\"\"; $env:DRY_RUN=\"true\"; ..\\\\.venv\\\\Scripts\\\\python.exe -c \"import os; os.environ['DASHBOARD_USER']=''; os.environ['DASHBOARD_PASSWORD']=''; from fastapi.testclient import TestClient; from main import create_app; app=create_app\\(\\); c=TestClient\\(app\\); r=c.get\\('/'\\); print\\('fail-closed GET / ->', r.status_code, '\\(expect 503\\)'\\); print\\('token leaked:', 'test' in r.text and 'BEARER' in r.text.upper\\(\\)\\)\" 2>$null)"
+    ]
+  }
+}

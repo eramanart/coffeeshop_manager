@@ -1,0 +1,7 @@
+# Development-only dependencies for CoffeeManager-OS.
+# Install runtime deps first, then these:
+#     pip install -r requirements.txt
+#     pip install -r requirements-dev.txt
+
+pytest==9.1.0          # test runner for tests/ (test_pass1_fixes.py, etc.)
+httpx==0.28.1          # required by fastapi.testclient.TestClient used in the smoke tests

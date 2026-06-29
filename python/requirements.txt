@@ -1,0 +1,25 @@
+# Runtime dependencies for CoffeeManager-OS — pinned to the versions in the working venv.
+# Recreate the environment from a clean checkout with:
+#     python -m venv .venv
+#     .venv\Scripts\activate            (Windows)   |   source .venv/bin/activate (POSIX)
+#     pip install -r requirements.txt
+#
+# Direct dependencies only — verified against the actual `import` sites in the tree,
+# not a remembered list. Transitive deps (starlette, pydantic, torch, etc.) are
+# resolved by pip. Pins are exact for reproducibility; bump deliberately.
+
+fastapi==0.136.1          # api/main.py — dashboard, HITL endpoints, webhooks, scheduler host
+uvicorn==0.46.0           # ASGI server (python main.py / uvicorn api.main:app)
+APScheduler==3.11.2       # cron jobs in main.py
+python-dotenv==1.2.2      # settings.env loading (load_dotenv across modules)
+lxml==6.1.0               # core/isaf_generator.py — i.SAF XML build + XSD validation
+pillow==12.2.0            # agent/skills/scan_receipt.py, make_test_receipt.py
+numpy==2.4.4              # agent/skills/scan_receipt.py (easyocr image arrays)
+python-doctr==1.0.1       # OCR engine (Tier 1/2 confidence)
+easyocr==1.7.2            # OCR fallback engine
+logfire[fastapi,sqlite3]==4.37.0  # observability: request + sqlite tracing (fail-open, no-op without LOGFIRE_TOKEN)
+
+# httpx is intentionally NOT here: telegram notifications use stdlib urllib today, so
+# httpx is not a runtime dependency. It IS needed by fastapi's TestClient (dev only —
+# see requirements-dev.txt) and becomes a runtime dep in Pass 3 when _send_telegram
+# moves to async httpx. Move it here, pinned, at that point.

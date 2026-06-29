@@ -1,0 +1,15 @@
+To: orders@kavos-tiekėjas.lt
+Subject: Purchase Order — Espresso beans
+
+Dear Kavos Tiekėjas UAB,
+
+Please supply the following:
+
+  Item:     Espresso beans
+  Quantity: 25.0 kg
+  Delivery: as soon as possible
+
+Best regards,
+CoffeeShop Management
+
+[AWAITING OWNER APPROVAL — DO NOT SEND]

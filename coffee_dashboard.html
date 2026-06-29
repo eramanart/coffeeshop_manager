@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoffeeManager</title>
+<style>
+  :root{
+    /* palette — continuous with the existing app, with one espresso anchor */
+    --paper:#F1EFE8;        /* page */
+    --surface:#FFFFFF;      /* cards */
+    --espresso:#2C2018;     /* header band */
+    --espresso-line:#4A382B;
+    --ink:#241F18;          /* primary text */
+    --navy:#1A2E4A;         /* brand / headings */
+    --muted:#6B665E;        /* secondary text */
+    --line:#E4E0D6;         /* hairlines */
+    --green:#0F6E56;        /* good / confirm */
+    --amber:#BA7517;        /* caution / money */
+    --terra:#9E3C1C;        /* alert / compliance / danger */
+    --cream:#EDE7DB;        /* on-espresso text */
+    /* type */
+    --sans:"Segoe UI",Roboto,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:var(--sans);background:var(--paper);color:var(--ink);
+    line-height:1.45;-webkit-font-smoothing:antialiased;
+    padding-bottom:48px;
+  }
+  .wrap{max-width:480px;margin:0 auto}
+
+  /* ── header band ─────────────────────────────────────────── */
+  .top{background:var(--espresso);color:var(--cream);padding:18px 20px 16px;
+       border-bottom:1px solid var(--espresso-line)}
+  .top .brand{display:flex;align-items:baseline;gap:8px}
+  .top h1{font-size:18px;font-weight:600;letter-spacing:.2px}
+  .top .cup{font-size:18px;line-height:1}
+  .top .stamp{font-size:11.5px;color:#B9AE9D;margin-top:2px;
+              display:flex;gap:8px;align-items:center}
+  .top .stamp a{color:#D8C8B3;text-decoration:none;border-bottom:1px dotted #8A7763}
+
+  /* vitals */
+  .vitals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+  .vital{background:rgba(255,255,255,.05);border:1px solid var(--espresso-line);
+         border-radius:9px;padding:8px 6px 7px;text-align:left;cursor:pointer;
+         transition:background .15s}
+  .vital:hover,.vital:focus-visible{background:rgba(255,255,255,.10);outline:none}
+  .vital .k{font-size:9.5px;letter-spacing:.7px;text-transform:uppercase;
+            color:#A99B89;font-weight:600}
+  .vital .v{font-size:13.5px;font-weight:700;margin-top:3px;display:flex;
+            align-items:center;gap:5px;font-family:var(--mono)}
+  .dot{width:7px;height:7px;border-radius:50%;flex:none}
+  .ok .dot{background:#48C39B}      .ok .v{color:#EDE7DB}
+  .warn .dot{background:#E6A23C}    .warn .v{color:#F0CE96}
+  .bad .dot{background:#E36B47}     .bad .v{color:#F2B7A3}
+  .vital-note{grid-column:1/-1;font-size:11.5px;color:#C9BDAC;
+              background:rgba(0,0,0,.18);border-radius:8px;padding:8px 10px;
+              display:none;line-height:1.4}
+  .vital-note.show{display:block}
+
+  /* ── sections ────────────────────────────────────────────── */
+  .eyebrow{display:flex;align-items:center;gap:8px;margin:22px 20px 10px}
+  .eyebrow .lbl{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;
+                color:var(--muted);font-weight:700}
+  .eyebrow .count{font-family:var(--mono);font-size:11px;font-weight:700;
+                  color:#fff;background:var(--terra);border-radius:20px;
+                  padding:1px 8px;min-width:20px;text-align:center}
+  .eyebrow .count.zero{background:var(--green)}
+  .pad{padding:0 20px}
+
+  /* action cards */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:13px;
+        padding:14px 15px;margin-bottom:11px;position:relative;overflow:hidden;
+        border-left:4px solid var(--navy)}
+  .card.intro{animation:rise .4s ease both}
+  .card[data-accent="terra"]{border-left-color:var(--terra)}
+  .card[data-accent="amber"]{border-left-color:var(--amber)}
+  .card[data-accent="navy"]{border-left-color:var(--navy)}
+  .card[data-accent="teal"]{border-left-color:var(--green)}
+  .card .ttl{font-size:14.5px;font-weight:700;color:var(--navy);
+             letter-spacing:.1px;line-height:1.3}
+  .card .body{font-size:13px;color:var(--ink);margin-top:5px}
+  .card .figs{font-family:var(--mono);font-size:13px}
+  .card .why{font-size:12px;color:var(--muted);margin-top:7px;
+             padding-top:7px;border-top:1px dashed var(--line)}
+  .card .why b{color:var(--terra);font-weight:600}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  button,.btn{font-family:var(--sans);font-size:13px;font-weight:600;
+              border-radius:8px;padding:8px 15px;border:1px solid transparent;
+              cursor:pointer;text-decoration:none;display:inline-flex;
+              align-items:center;gap:6px;transition:opacity .15s,transform .05s}
+  button:active,.btn:active{transform:translateY(1px)}
+  .b-go{background:var(--green);color:#fff}
+  .b-ext{background:var(--green);color:#fff}
+  .b-skip{background:transparent;color:var(--muted);border-color:var(--line)}
+  .b-skip:hover{color:var(--terra);border-color:var(--terra)}
+  button:disabled{opacity:.55;cursor:default}
+  .toggle{margin-top:9px;font-size:11.5px;color:var(--muted);background:none;
+          border:none;padding:0;cursor:pointer;font-weight:600;letter-spacing:.2px}
+  .toggle:hover{color:var(--navy)}
+  .meta{display:none;margin-top:8px;font-family:var(--mono);font-size:10.5px;
+        color:var(--muted);background:#F7F5F0;border-radius:7px;padding:8px 10px;
+        word-break:break-all;line-height:1.5}
+  .meta.show{display:block}
+  .inline-msg{font-size:12px;margin-top:10px;display:none;padding:8px 11px;
+              border-radius:8px;line-height:1.4}
+  .inline-msg.show{display:block}
+  .inline-msg.err{background:#FBEEE8;color:#8A331A;border:1px solid #E6C9BC}
+
+  /* settled (done/skipped) state */
+  .card.settled{border-left-color:var(--green);background:#F6F8F5}
+  .card.settled.skip{border-left-color:var(--muted);background:#F7F5F0}
+  .settled-row{display:flex;align-items:center;gap:9px;font-size:13px;
+               color:var(--green);font-weight:600}
+  .settled.skip .settled-row{color:var(--muted)}
+  .settled .check{font-size:14px}
+
+  /* empty state */
+  .empty{background:var(--surface);border:1px solid var(--line);border-radius:13px;
+         padding:22px 18px;text-align:center}
+  .empty .e1{font-size:14px;font-weight:700;color:var(--green)}
+  .empty .e2{font-size:12.5px;color:var(--muted);margin-top:4px}
+
+  /* glance: inventory + roster */
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:13px;
+         padding:13px 15px;margin-bottom:11px}
+  .inv-row{margin-bottom:11px}
+  .inv-row:last-child{margin-bottom:0}
+  .inv-head{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px}
+  .inv-head .name{font-weight:600}
+  .inv-head .qty{font-family:var(--mono);font-weight:700}
+  .inv-head .qty.low{color:var(--terra)} .inv-head .qty.good{color:var(--green)}
+  .track{background:#EDEAE2;border-radius:5px;height:7px;overflow:hidden}
+  .fill{height:7px;border-radius:5px}
+  .fill.low{background:var(--terra)} .fill.good{background:var(--green)}
+  .crew{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .crew:last-child{border-bottom:none}
+  .av{width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;
+      display:flex;align-items:center;justify-content:center;font-size:12.5px;
+      font-weight:700;flex:none}
+  .crew .nm{font-size:13px;font-weight:600}
+  .crew .sl{font-size:11px;color:var(--muted)}
+  .none{color:var(--muted);font-size:12.5px}
+
+  /* advanced disclosure + footer */
+  details.adv{margin:18px 20px 0}
+  details.adv summary{font-size:12px;color:var(--muted);font-weight:600;
+                      letter-spacing:.4px;cursor:pointer;list-style:none}
+  details.adv summary::-webkit-details-marker{display:none}
+  details.adv summary::before{content:"▸ ";color:var(--muted)}
+  details.adv[open] summary::before{content:"▾ "}
+  .adv-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+  .adv-links a{font-size:12px;color:var(--navy);text-decoration:none;
+               border:1px solid var(--line);border-radius:7px;padding:6px 11px;
+               background:var(--surface)}
+  .adv-links a:hover{border-color:var(--navy)}
+  .foot{text-align:center;font-size:11px;color:var(--muted);margin:26px 20px 0;line-height:1.5}
+  .foot .sig{color:var(--green);font-weight:600}
+
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+  :focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand"><span class="cup">☕</span><h1>CoffeeManager</h1></div>
+    <div class="stamp">
+      <span id="stamp-time">—</span><span>·</span>
+      <a href="#" id="refresh">Refresh</a>
+      <span id="mode-tag" style="margin-left:auto;font-size:10px;color:#7E6F5E"></span>
+    </div>
+    <div class="vitals" id="vitals"></div>
+  </header>
+
+  <section>
+    <div class="eyebrow"><span class="lbl">Needs you</span><span class="count" id="need-count">0</span></div>
+    <div class="pad" id="inbox"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="lbl">At a glance</span></div>
+    <div class="pad">
+      <div class="panel" id="inv-panel"></div>
+      <div class="panel" id="crew-panel"></div>
+    </div>
+  </section>
+
+  <details class="adv">
+    <summary>Advanced &amp; logs</summary>
+    <div class="adv-links">
+      <a href="/audit/history" target="_blank">Audit history</a>
+      <a href="/portal/actions" target="_blank">Portal log</a>
+      <a href="/receipts" target="_blank">Receipts</a>
+      <a href="/status" target="_blank">System status</a>
+      <a href="/health" target="_blank">Health</a>
+      <a href="/docs" target="_blank">API docs</a>
+    </div>
+  </details>
+
+  <p class="foot">
+    Nothing is filed automatically.<br>
+    <span class="sig">Every tax form waits for your e-signature.</span>
+  </p>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   CONFIG
+   ─────
+   This page is built to REPLACE the dashboard HTML your FastAPI app serves
+   (the _render_dashboard() string in api/main.py). When served that way it
+   sits behind the Basic-auth middleware you already have, and the server
+   injects the bearer token the same way it does today — set mode:'live' and
+   have the server replace TOKEN below, exactly like the current page does.
+
+   Opened directly as a file it runs in DEMO mode with sample data and no
+   token (safe to share). Do NOT paste a real token into a file you open
+   directly — that is the leak the Basic-auth layer exists to prevent.
+   ════════════════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  mode: "demo",                 // "demo" | "live"
+  apiBase: "",                  // "" = same origin (when served by FastAPI)
+  token: "",                    // live + server-rendered: server injects this
+};
+
+/* What each alert means, in plain words. Mirrors api/main.py's _alert_label /
+   _primary_btn, plus a one-line consequence so the owner knows what a tap does. */
+const META = {
+  AUDIT_MISMATCH: {title:"Z-report mismatch", accent:"terra",
+    why:'Fix the discrepancy in your books, then mark it checked. <b>Resolve before 23:59 to avoid a VMI fine.</b>',
+    action:{kind:"confirm", go:"Mark checked", done:"Marked checked"}},
+  RECEIPT_DRAFTED: {title:"i.SAF draft ready", accent:"teal",
+    why:"Opens VMI to sign. Nothing is submitted until you sign in EDS.",
+    action:{kind:"external", go:"Sign in EDS", url:"https://deklaravimas.vmi.lt"}},
+  ISAF_MONTHLY_READY: {title:"Monthly i.SAF ready", accent:"teal",
+    why:"Opens VMI to sign. Due by the 15th.",
+    action:{kind:"external", go:"Sign in EDS", url:"https://deklaravimas.vmi.lt"}},
+  ISAF_MONTHLY_REMINDER: {title:"Monthly i.SAF due soon", accent:"amber",
+    why:"Lets the agent compile last month's receipts into a draft.",
+    action:{kind:"confirm", go:"Compile draft", done:"Compiling"}},
+  NEW_HIRE_DRAFTED: {title:"Sodra 1-SD draft ready", accent:"terra",
+    why:'Opens Sodra to sign. <b>Must be signed before their first day.</b>',
+    action:{kind:"external", go:"Sign in Sodra", url:"https://draudejai.sodra.lt"}},
+  STOCK_LOW: {title:"Low stock", accent:"amber",
+    why:"Sends the order email to your supplier.",
+    action:{kind:"confirm", go:"Send order", done:"Order sent"}},
+  PO_DRAFTED: {title:"Purchase order ready", accent:"amber",
+    why:"Sends the order email to your supplier.",
+    action:{kind:"confirm", go:"Send order", done:"Order sent"}},
+  ROSTER_DRAFT: {title:"Weekly roster ready", accent:"navy",
+    why:"Publishes the week's roster to the team channel.",
+    action:{kind:"confirm", go:"Approve roster", done:"Roster published"}},
+  SHIFT_SUGGESTION: {title:"Shift suggestion", accent:"navy",
+    why:"Marks this day's suggestion approved.",
+    action:{kind:"confirm", go:"Approve", done:"Approved"}},
+  PL_DRAFT_READY: {title:"P&L draft ready", accent:"navy",
+    why:"Marks the P&L reviewed. The full draft is saved to disk.",
+    action:{kind:"confirm", go:"Mark reviewed", done:"Reviewed"}},
+  SMARTID_TIMEOUT: {title:"Login timed out", accent:"terra",
+    why:"The Smart-ID push wasn't approved in time. Sign in at the portal, then re-trigger.",
+    action:{kind:"external", go:"Open portal", url:"https://imas.vmi.lt"}},
+  BREAKER_OPEN: {title:"Portal paused", accent:"terra",
+    why:"Login keeps failing, so actions are paused. Check the portal, then try again.",
+    action:{kind:"none"}},
+};
+function metaFor(t){ return META[t] || {title:(t||"").replace(/_/g," "),accent:"navy",
+  why:"", action:{kind:"confirm", go:"Confirm", done:"Done"}}; }
+
+/* ── demo data (sample only) ───────────────────────────────────────────── */
+const DEMO = {
+  vitals:{
+    audit:{state:"ok", value:"OK",   note:"Today's Z-report reconciled. Last checked 07:00 UTC."},
+    agent:{state:"ok", value:"Live", note:"The agent is running and the scheduler is active."},
+    conn :{state:"ok", value:"Up",   note:"Phone approvals are reaching the agent. If this reads Offline, run Start on the shop computer."},
+    pos  :{state:"warn",value:"Stub", note:"No real till connected yet — sales read €0.00, so audits aren't live. Connect Paysera or Robolabs to turn compliance checks on."},
+  },
+  alerts:[
+    {event_type:"STOCK_LOW", event_key:"PO_DRAFTED:BEANS_ESPRESSO:2026-W25",
+     fields:{Item:"Espresso beans", Order:"6 kg", Supplier:"Vilnius Coffee Roasters"}},
+    {event_type:"RECEIPT_DRAFTED", event_key:"RECEIPT_DRAFTED:invoice_2026_06_14.jpg",
+     fields:{Supplier:"Coffee Lab UAB", Amount:"142.00 EUR + 29.82 PVM", Date:"2026-06-14"}},
+    {event_type:"NEW_HIRE_DRAFTED", event_key:"NEW_HIRE_DRAFTED:Greta Kazlauskaite:2026-06-23",
+     fields:{Employee:"Greta Kazlauskaitė", "First day":"2026-06-23"}},
+    {event_type:"AUDIT_MISMATCH", event_key:"AUDIT_MISMATCH:2026-06-15",
+     fields:{POS:"1,284.50 EUR", "i.EKA":"1,261.00 EUR", Difference:"23.50 EUR"}},
+    {event_type:"ROSTER_DRAFT", event_key:"ROSTER_DRAFT:2026-W26",
+     fields:{Week:"23–29 Jun", Shifts:"14 assigned · 1 uncovered"}},
+  ],
+  stock:[
+    {name:"Espresso beans", current_kg:"3.2", threshold_kg:"5.0", unit:"kg", is_low:true},
+    {name:"Oat milk",       current_kg:"18",  threshold_kg:"12",  unit:"L",  is_low:false},
+    {name:"Cups (12oz)",    current_kg:"640", threshold_kg:"300", unit:"pcs",is_low:false},
+  ],
+  roster:[
+    {name:"Tomas Vaitkus",    slot_label:"Opening · 08:00–14:00"},
+    {name:"Greta Kazlauskaitė", slot_label:"Mid · 11:00–17:00"},
+    {name:"Mindaugas Jonaitis", slot_label:"Close · 15:00–21:00"},
+  ],
+};
+
+/* ── helpers ───────────────────────────────────────────────────────────── */
+const $ = s => document.querySelector(s);
+function esc(s){const d=document.createElement("div");d.textContent=s==null?"":String(s);return d.innerHTML;}
+function cleanPreview(t){           // strip Telegram markdown + the "Reply GO/SKIP" footer for live data
+  return String(t||"")
+    .replace(/[*_`]/g,"")
+    .split("\n").filter(l=>!/^\s*(reply\s+)?(go|skip|approve)\b/i.test(l)
+                          && !/post\s+\/confirm/i.test(l))
+    .join(" ").replace(/\s+/g," ").trim();
+}
+function initials(name){const p=String(name).trim().split(/\s+/);
+  return ((p[0]?.[0]||"")+(p.length>1?p[p.length-1][0]:"")).toUpperCase();}
+
+/* ── data loading ──────────────────────────────────────────────────────── */
+async function authedFetch(path, opts={}){
+  const h = Object.assign({}, opts.headers||{});
+  if(CONFIG.token) h["Authorization"] = "Bearer "+CONFIG.token;
+  return fetch(CONFIG.apiBase+path, Object.assign({}, opts, {headers:h}));
+}
+async function loadData(){
+  if(CONFIG.mode!=="live"){ return structuredClone(DEMO); }
+  const [st, al, sk, sh] = await Promise.all([
+    authedFetch("/status"), authedFetch("/alerts"),
+    authedFetch("/stock"),  authedFetch("/shifts/today"),
+  ]);
+  const status=await st.json(), alerts=await al.json(),
+        stock=await sk.json(),  shifts=await sh.json();
+  const a = status.audit||{};
+  const audit = a.status==="OK"  ? {state:"ok",  value:"OK",
+                  note:"Today's Z-report reconciled."}
+              : a.status==="NO_DATA" ? {state:"warn", value:"No data",
+                  note:"No audit has run yet today."}
+              : {state:"bad", value:a.status||"?",
+                  note:"Discrepancy "+(a.discrepancy??"?")+" EUR — open it under Needs you."};
+  const breakers=(status.open_circuit_breakers||[]);
+  return {
+    vitals:{
+      audit,
+      agent:{state:"ok",value:"Live",note:"The agent is running and the scheduler is active."},
+      conn :{state:breakers.length?"warn":"ok", value:breakers.length?"Check":"Up",
+             note:breakers.length?("Portal paused: "+breakers.join(", ")):"Phone approvals are reaching the agent."},
+      pos  :{state:"warn",value:"Stub",note:"Sales read €0.00 until a real till is connected; audits aren't live yet."},
+    },
+    alerts:(alerts.alerts||[]).filter(x=>!x.acknowledged_at).map(x=>({
+      event_type:x.event_type, event_key:x.event_key, preview:cleanPreview(x.message_preview),
+    })),
+    stock:(stock.items||stock.low_stock||[]),
+    roster:(shifts.roster||[]).map(r=>({name:r.name, slot_label:r.slot_label||r.slot_name||""})),
+  };
+}
+
+/* ── render ────────────────────────────────────────────────────────────── */
+function renderVitals(v){
+  const wrap=$("#vitals"); wrap.innerHTML="";
+  const order=[["audit","Audit"],["agent","Agent"],["conn","Connection"],["pos","POS"]];
+  let noteEl=null;
+  order.forEach(([key,label])=>{
+    const d=v[key]; if(!d) return;
+    const b=document.createElement("button");
+    b.className="vital "+d.state; b.type="button";
+    b.innerHTML=`<div class="k">${esc(label)}</div>
+      <div class="v"><span class="dot"></span>${esc(d.value)}</div>`;
+    b.onclick=()=>{
+      if(!noteEl){noteEl=document.createElement("div");noteEl.className="vital-note";wrap.appendChild(noteEl);}
+      const same = noteEl.dataset.k===key && noteEl.classList.contains("show");
+      noteEl.textContent=d.note; noteEl.dataset.k=key;
+      noteEl.classList.toggle("show", !same);
+    };
+    wrap.appendChild(b);
+  });
+}
+
+function renderCard(a, i){
+  const m=metaFor(a.event_type);
+  const card=document.createElement("div");
+  card.className="card intro"; card.dataset.accent=m.accent; card.dataset.key=a.event_key;
+  card.style.animationDelay=(i*45)+"ms";
+
+  let bodyHtml="";
+  if(a.fields){
+    bodyHtml = Object.entries(a.fields)
+      .map(([k,val])=>`${esc(k)}: <span class="figs">${esc(val)}</span>`).join("<br>");
+  } else if(a.preview){ bodyHtml = esc(a.preview); }
+
+  const act=m.action; let actionsHtml="";
+  if(act.kind==="external"){
+    actionsHtml = `<a class="btn b-ext" href="${esc(act.url)}" target="_blank" rel="noopener">${esc(act.go)} ↗</a>
+                   <button class="b-skip" data-do="skip">Skip</button>`;
+  } else if(act.kind==="none"){
+    actionsHtml = `<button class="b-skip" data-do="skip">Dismiss</button>`;
+  } else {
+    actionsHtml = `<button class="b-go" data-do="go">${esc(act.go)}</button>
+                   <button class="b-skip" data-do="skip">Skip</button>`;
+  }
+
+  card.innerHTML = `
+    <div class="ttl">${esc(m.title)}</div>
+    <div class="body">${bodyHtml}</div>
+    ${m.why?`<div class="why">${m.why}</div>`:""}
+    <div class="actions">${actionsHtml}</div>
+    <button class="toggle" data-do="meta">details ⌄</button>
+    <div class="meta">event_key: ${esc(a.event_key)}</div>
+    <div class="inline-msg err"></div>`;
+
+  card.querySelector('[data-do="meta"]')?.addEventListener("click",e=>{
+    card.querySelector(".meta").classList.toggle("show");
+    e.target.textContent = card.querySelector(".meta").classList.contains("show") ? "details ⌃" : "details ⌄";
+  });
+  card.querySelector('[data-do="skip"]')?.addEventListener("click",()=>act_card(card,a.event_key,"dismiss"));
+  const goBtn=card.querySelector('[data-do="go"]');
+  if(goBtn) goBtn.addEventListener("click",()=>act_card(card,a.event_key,"confirm"));
+
+  return card;
+}
+
+function renderInbox(alerts){
+  const box=$("#inbox"); box.innerHTML="";
+  $("#need-count").textContent=alerts.length;
+  $("#need-count").classList.toggle("zero", alerts.length===0);
+  if(!alerts.length){
+    box.innerHTML=`<div class="empty"><div class="e1">You're all caught up.</div>
+      <div class="e2">Nothing needs a decision right now. The next audit runs at 07:00 UTC.</div></div>`;
+    return;
+  }
+  alerts.forEach((a,i)=>box.appendChild(renderCard(a,i)));
+}
+
+function renderInventory(items){
+  const p=$("#inv-panel");
+  if(!items||!items.length){p.innerHTML='<div class="none">No inventory data.</div>';return;}
+  const sorted=[...items].sort((a,b)=>(b.is_low?1:0)-(a.is_low?1:0));
+  p.innerHTML=sorted.map(it=>{
+    let pct=0; try{const c=parseFloat(it.current_kg),t=parseFloat(it.threshold_kg);
+      pct=Math.max(0,Math.min(100,Math.round(c/Math.max(t*2,.001)*100)));}catch(e){}
+    const cls=it.is_low?"low":"good";
+    return `<div class="inv-row">
+      <div class="inv-head"><span class="name">${esc(it.name)}</span>
+        <span class="qty ${cls}">${esc(it.current_kg)} / ${esc(it.threshold_kg)} ${esc(it.unit)}</span></div>
+      <div class="track"><div class="fill ${cls}" style="width:${pct}%"></div></div></div>`;
+  }).join("");
+}
+
+function renderRoster(roster){
+  const p=$("#crew-panel");
+  const head=`<div style="font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:9px">Today's roster</div>`;
+  if(!roster||!roster.length){p.innerHTML=head+'<div class="none">No shifts published today.</div>';return;}
+  p.innerHTML=head+roster.map(r=>`<div class="crew"><div class="av">${esc(initials(r.name))}</div>
+    <div><div class="nm">${esc(r.name)}</div><div class="sl">${esc(r.slot_label)}</div></div></div>`).join("");
+}
+
+/* ── actions (confirm / dismiss) ───────────────────────────────────────── */
+async function act_card(card, key, kind){
+  const go=card.querySelector('[data-do="go"]'), skip=card.querySelector('[data-do="skip"]');
+  const msg=card.querySelector(".inline-msg");
+  [go,skip].forEach(b=>b&&(b.disabled=true));
+  msg.classList.remove("show");
+  const goneTo = kind==="confirm" ? "go" : "skip";
+
+  if(CONFIG.mode!=="live"){
+    await new Promise(r=>setTimeout(r,420));        // simulate round-trip
+    return settle(card, kind, doneLabel(card,kind));
+  }
+  try{
+    const r=await authedFetch(`/${kind}/${encodeURIComponent(key)}`,{method:"POST",
+      headers:{"Content-Type":"application/json"}});
+    if(r.ok){ const d=await r.json();
+      settle(card, kind, kind==="confirm" ? prettyNext(d) : "Skipped"); refreshSoon(); }
+    else if(r.status===401){ showErr(msg,"The agent didn't accept that (401). Your session may be stale — reload the page."); reset(go,skip); }
+    else { showErr(msg,`Couldn't complete that (${r.status}). Try again.`); reset(go,skip); }
+  }catch(e){
+    showErr(msg,"Couldn't reach the agent. Make sure it's running on the shop computer, then retry.");
+    reset(go,skip);
+  }
+}
+function doneLabel(card,kind){
+  if(kind==="dismiss") return "Skipped";
+  const t=card.querySelector(".ttl").textContent;
+  for(const k in META){ if(META[k].title===t && META[k].action?.done) return META[k].action.done; }
+  return "Done";
+}
+function prettyNext(d){ return ({
+  purchase_order_queued_for_sending:"Order sent",
+  isaf_draft_queued:"Sent to VMI",
+  roster_published:"Roster published",
+  shift_suggestion_approved:"Approved",
+}[d.next_action]) || (d.status==="already_confirmed"?"Already done":"Done"); }
+
+function settle(card, kind, label){
+  card.classList.add("settled"); if(kind==="dismiss") card.classList.add("skip");
+  card.innerHTML=`<div class="settled-row"><span class="check">${kind==="dismiss"?"○":"✓"}</span>${esc(label)}</div>`;
+  // decrement the count + show empty state if last
+  const remaining=document.querySelectorAll("#inbox .card:not(.settled)").length;
+  const c=$("#need-count"); c.textContent=remaining;
+  c.classList.toggle("zero",remaining===0);
+  if(remaining===0){
+    setTimeout(()=>{ if(!document.querySelector("#inbox .card:not(.settled)")){
+      $("#inbox").innerHTML=`<div class="empty"><div class="e1">You're all caught up.</div>
+        <div class="e2">Nothing needs a decision right now.</div></div>`; }},700);
+  }
+}
+function showErr(el,t){el.textContent=t;el.classList.add("show");}
+function reset(...btns){btns.forEach(b=>b&&(b.disabled=false));}
+let _t; function refreshSoon(){clearTimeout(_t);_t=setTimeout(boot,1500);}  // live: quiet reconcile
+
+/* ── boot ──────────────────────────────────────────────────────────────── */
+function stampNow(){
+  const d=new Date();
+  $("#stamp-time").textContent="Updated "+
+    d.toLocaleString(undefined,{weekday:"short",day:"numeric",month:"short",
+      hour:"2-digit",minute:"2-digit"});
+}
+async function boot(){
+  $("#mode-tag").textContent = CONFIG.mode==="demo" ? "demo data" : "";
+  stampNow();
+  let data; try{ data=await loadData(); }catch(e){ data=structuredClone(DEMO); }
+  renderVitals(data.vitals);
+  renderInbox(data.alerts);
+  renderInventory(data.stock);
+  renderRoster(data.roster);
+}
+$("#refresh").addEventListener("click",e=>{e.preventDefault();boot();});
+boot();
+</script>
+</body>
+</html>

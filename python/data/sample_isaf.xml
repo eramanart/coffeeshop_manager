@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<iSAFFile xmlns="http://www.vmi.lt/cms/imas/isaf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Header>
+    <FileDescription>
+      <FileVersion>iSAF1.2</FileVersion>
+      <FileDateCreated>2026-05-13T07:49:16</FileDateCreated>
+      <DataType>P</DataType>
+      <SoftwareCompanyName>CoffeeManager-OS</SoftwareCompanyName>
+      <SoftwareName>CoffeeManager-OS</SoftwareName>
+      <SoftwareVersion>1.0</SoftwareVersion>
+      <RegistrationNumber>300000000</RegistrationNumber>
+      <NumberOfParts>1</NumberOfParts>
+      <PartNumber>1</PartNumber>
+      <SelectionCriteria>
+        <SelectionStartDate>2025-05-01</SelectionStartDate>
+        <SelectionEndDate>2025-05-03</SelectionEndDate>
+      </SelectionCriteria>
+    </FileDescription>
+  </Header>
+  <SourceDocuments>
+    <PurchaseInvoices>
+      <Invoice>
+        <InvoiceNo>SF-2025-0042</InvoiceNo>
+        <SupplierInfo>
+          <VATRegistrationNumber>LT987654321</VATRegistrationNumber>
+          <RegistrationNumber>987654321</RegistrationNumber>
+          <Country xsi:nil="true"/>
+          <Name>Kavos Tiekėjas UAB</Name>
+        </SupplierInfo>
+        <InvoiceDate>2025-05-01</InvoiceDate>
+        <InvoiceType>SF</InvoiceType>
+        <SpecialTaxation></SpecialTaxation>
+        <References/>
+        <VATPointDate xsi:nil="true"/>
+        <RegistrationAccountDate xsi:nil="true"/>
+        <DocumentTotals>
+          <DocumentTotal>
+            <TaxableValue>248.76</TaxableValue>
+            <TaxCode xsi:nil="true"/>
+            <TaxPercentage>21</TaxPercentage>
+            <Amount>52.24</Amount>
+          </DocumentTotal>
+        </DocumentTotals>
+      </Invoice>
+      <Invoice>
+        <InvoiceNo>SF-2025-0043</InvoiceNo>
+        <SupplierInfo>
+          <VATRegistrationNumber>LT555444333</VATRegistrationNumber>
+          <RegistrationNumber>555444333</RegistrationNumber>
+          <Country xsi:nil="true"/>
+          <Name>Pieno Žvaigždės AB</Name>
+        </SupplierInfo>
+        <InvoiceDate>2025-05-03</InvoiceDate>
+        <InvoiceType>SF</InvoiceType>
+        <SpecialTaxation></SpecialTaxation>
+        <References/>
+        <VATPointDate xsi:nil="true"/>
+        <RegistrationAccountDate xsi:nil="true"/>
+        <DocumentTotals>
+          <DocumentTotal>
+            <TaxableValue>91.74</TaxableValue>
+            <TaxCode xsi:nil="true"/>
+            <TaxPercentage>9</TaxPercentage>
+            <Amount>8.26</Amount>
+          </DocumentTotal>
+        </DocumentTotals>
+      </Invoice>
+    </PurchaseInvoices>
+  </SourceDocuments>
+</iSAFFile>

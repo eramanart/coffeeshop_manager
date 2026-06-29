@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CoffeeManager-OS — .gitignore
+# This repo is not yet under git. This file exists so that WHEN `git init` is
+# first run, live secrets and local state are never swept into a commit.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Secrets — NEVER commit ──────────────────────────────────────────────────
+# Real credentials live here (Telegram token, OpenClaw/Anthropic key, Google
+# refresh token, Smart-ID personal code). Commit settings.env.example instead.
+config/settings.env
+config/settings.env.local
+*.env
+!*.env.example
+
+# ── Virtual environments ────────────────────────────────────────────────────
+.venv/
+.venv-*/
+venv/
+env/
+
+# ── Local database & runtime state ──────────────────────────────────────────
+# memory.sqlite* covers the DB and its -journal/-wal/-shm sidecars; *.bak covers
+# the timestamped snapshots reset_barista_data.py writes — full copies of the
+# compliance DB including employee personal data. NEVER commit any of these.
+python/data/memory.sqlite*
+python/data/*.bak
+python/data/pl_draft_*.json
+python/data/workspace/manual_review/
+# Defense in depth: ANY SQLite DB or .bak snapshot anywhere in the tree (e.g. a
+# manual `copy memory.sqlite memory.sqlite.bak` landing at python/, not data/).
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.bak
+
+# ── Python caches ───────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Editor / OS ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ── Local tooling binaries (downloaded, not project source) ─────────────────
+cloudflared.exe
+*.exe

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My shifts</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --paper:#F3F0E9; --surface:#FFFFFF; --espresso:#2C2018; --espresso2:#473526;
+    --ink:#26211A; --muted:#7A7468; --line:#E7E2D7; --line2:#F0ECE3;
+    --open:#CB861B;   /* morning  */
+    --mid:#2E8B6F;    /* midday   */
+    --close:#3D4F86;  /* evening  */
+    --cream:#EFE7DB;
+    --sans:"Segoe UI",Roboto,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);
+       line-height:1.45;-webkit-font-smoothing:antialiased;padding-bottom:40px}
+  .wrap{max-width:460px;margin:0 auto}
+  .top{background:var(--espresso);color:var(--cream);padding:calc(16px + env(safe-area-inset-top)) 20px 14px}
+  .hi{font-size:19px;font-weight:600;letter-spacing:.2px;display:flex;align-items:center;gap:7px}
+  .demo{font-family:var(--mono);font-size:9px;letter-spacing:.6px;text-transform:uppercase;
+        background:#5A4636;color:#D8C8B3;border-radius:20px;padding:2px 7px;margin-left:auto}
+  .stat{font-family:var(--mono);font-size:12px;color:#B5A893;margin-top:4px}
+  .next{font-size:12.5px;color:#E7D9C4;margin-top:9px;background:rgba(255,255,255,.06);
+        border:1px solid var(--espresso2);border-radius:9px;padding:8px 11px}
+  .next b{color:#fff;font-weight:600}
+  .tabs{display:flex;gap:6px;background:var(--paper);padding:12px 20px 4px;position:sticky;top:0;z-index:5}
+  .tab{flex:1;text-align:center;font-size:13px;font-weight:600;color:var(--muted);
+       background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 0;cursor:pointer;position:relative}
+  .tab.on{color:#fff;background:var(--espresso);border-color:var(--espresso)}
+  .tab .bdg{position:absolute;top:-5px;right:8px;background:var(--close);color:#fff;
+            font-family:var(--mono);font-size:9px;font-weight:700;border-radius:10px;min-width:16px;height:16px;line-height:16px;padding:0 4px}
+  .banner{font-size:11.5px;color:var(--muted);text-align:center;padding:8px 20px 2px;min-height:14px}
+  #view{padding:8px 20px 0}
+  .mnav{display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px}
+  .mnav b{font-size:15px;font-weight:700;color:var(--ink)}
+  .arw{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:16px;color:var(--ink);cursor:pointer;line-height:1}
+  .dow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}
+  .dow span{text-align:center;font-size:10px;font-weight:700;letter-spacing:.4px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .cell{aspect-ratio:1/1.18;border-radius:10px;background:var(--surface);border:1px solid var(--line2);
+        display:flex;flex-direction:column;align-items:center;padding:6px 2px 5px;cursor:pointer;position:relative;transition:transform .05s}
+  .cell:active{transform:scale(.95)}
+  .cell.dim{background:transparent;border-color:transparent;cursor:default}
+  .cell.dim .dn{color:#C3BCAD}
+  .cell.future{background:#FBFAF6;border-style:dashed;border-color:var(--line)}
+  .dn{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink)}
+  .cell.today{box-shadow:0 0 0 2px var(--espresso) inset}
+  .cell.today .dn{color:var(--espresso)}
+  .mk{margin-top:auto;width:100%;border-radius:5px;height:17px;display:flex;align-items:center;justify-content:center;
+      font-family:var(--mono);font-size:9.5px;font-weight:800;color:#fff}
+  .mk.open{background:var(--open)} .mk.mid{background:var(--mid)} .mk.close{background:var(--close)}
+  .lockdot{position:absolute;top:6px;right:7px;width:5px;height:5px;border-radius:50%;background:#CBB89B}
+  .legend{display:flex;gap:14px;justify-content:center;margin:14px 0 4px;flex-wrap:wrap}
+  .legend span{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+  .sw{width:9px;height:9px;border-radius:3px}
+  .sw.open{background:var(--open)} .sw.mid{background:var(--mid)} .sw.close{background:var(--close)}
+  .wk{display:flex;flex-direction:column;gap:8px}
+  .wrow{background:var(--surface);border:1px solid var(--line2);border-radius:11px;padding:11px 13px;
+        display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--line)}
+  .wrow.open{border-left-color:var(--open)} .wrow.mid{border-left-color:var(--mid)}
+  .wrow.close{border-left-color:var(--close)} .wrow.off{border-left-color:var(--line)}
+  .wrow.today{background:#FBF6EE}
+  .wd{width:42px;flex:none}
+  .wd .d1{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+  .wd .d2{font-family:var(--mono);font-size:17px;font-weight:700;line-height:1}
+  .wbody{flex:1}
+  .wbody .t1{font-size:13.5px;font-weight:700}
+  .wbody .t1.offlbl{color:var(--muted);font-weight:600}
+  .wbody .t2{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:1px}
+  .wbody .t3{font-size:11px;color:var(--muted);margin-top:2px}
+  .sec{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:700;margin:6px 0 9px}
+  .swapcard{background:var(--surface);border:1px solid var(--line2);border-radius:12px;padding:13px 14px;margin-bottom:10px;border-left:4px solid var(--close)}
+  .swapcard .who{font-size:13.5px;font-weight:700}
+  .trade{font-size:12.5px;margin-top:5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:7px;color:#fff;font-weight:700}
+  .chip.open{background:var(--open)} .chip.mid{background:var(--mid)} .chip.close{background:var(--close)}
+  .outrow{background:#FBFAF6;border:1px solid var(--line2);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:12.5px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .pend{font-family:var(--mono);font-size:10px;color:var(--open);font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+  .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  button{font-family:var(--sans);font-size:13px;font-weight:600;border-radius:9px;padding:9px 15px;border:1px solid transparent;cursor:pointer;transition:transform .05s,opacity .15s}
+  button:active{transform:translateY(1px)}
+  .pri{background:var(--mid);color:#fff} .pri.dusk{background:var(--espresso)}
+  .ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+  .ghost.on{background:var(--mid);color:#fff;border-color:var(--mid)}
+  .ghost.no.on{background:var(--close);color:#fff;border-color:var(--close)}
+  .danger{background:transparent;color:#9E3C1C;border-color:#E2C6BB}
+  button:disabled{opacity:.5;cursor:default}
+  .scrim{position:fixed;inset:0;background:rgba(30,24,18,.42);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-radius:18px 18px 0 0;
+         padding:18px 20px calc(22px + env(safe-area-inset-bottom));transform:translateY(102%);
+         transition:transform .26s cubic-bezier(.22,1,.36,1);z-index:21;max-width:460px;margin:0 auto}
+  .sheet.show{transform:translateY(0)}
+  .grab{width:38px;height:4px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+  .sh-date{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .sh-main{font-size:18px;font-weight:700;margin-top:3px;display:flex;align-items:center;gap:9px}
+  .sh-time{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:2px}
+  .pin{width:11px;height:11px;border-radius:4px;flex:none}
+  .pin.open{background:var(--open)} .pin.mid{background:var(--mid)} .pin.close{background:var(--close)}
+  .team{margin-top:15px}
+  .team .lbl{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+  .tm{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line2)}
+  .tm:last-child{border-bottom:none}
+  .av{width:30px;height:30px;border-radius:50%;background:var(--espresso);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none}
+  .av.me{background:var(--mid)}
+  .tm .nm{font-size:13px;font-weight:600} .tm .nm .youtag{color:var(--mid);font-weight:700}
+  .tm .ss{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto}
+  .note{font-size:12.5px;color:var(--muted);background:#FBFAF6;border:1px solid var(--line2);border-radius:9px;padding:10px 12px;margin-top:13px;line-height:1.45}
+  .qline{font-size:13px;font-weight:600;margin:15px 0 9px}
+  .picklist{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+  .pick{display:flex;align-items:center;gap:10px;background:#FBFAF6;border:1px solid var(--line2);border-radius:10px;padding:9px 11px;cursor:pointer}
+  .pick:active{transform:scale(.99)}
+  .pick .nm{font-size:13px;font-weight:600} .pick .ss{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto}
+  .empty{text-align:center;padding:34px 18px;color:var(--muted)}
+  .empty .e1{font-size:14px;font-weight:700;color:var(--ink)} .empty .e2{font-size:12.5px;margin-top:5px}
+  .loading{text-align:center;color:var(--muted);font-size:13px;padding:40px 0}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,16px);opacity:0;background:var(--espresso);color:#fff;
+         font-size:13px;font-weight:500;padding:11px 18px;border-radius:24px;z-index:40;transition:opacity .2s,transform .2s;max-width:88%;text-align:center}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  :focus-visible{outline:2px solid var(--mid);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="hi"><span>👋</span><span id="hi-name">Hi</span><span class="demo" id="demo-pill" style="display:none">demo</span></div>
+    <div class="stat" id="hi-stat">—</div>
+    <div class="next" id="hi-next" style="display:none"></div>
+  </header>
+  <nav class="tabs">
+    <button class="tab on" data-tab="month">Month</button>
+    <button class="tab" data-tab="week">Week</button>
+    <button class="tab" data-tab="swaps">Swaps<span class="bdg" id="swap-bdg" style="display:none">0</span></button>
+  </nav>
+  <div class="banner" id="banner"></div>
+  <div id="view"><div class="loading">Loading your shifts…</div></div>
+</div>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet"><div class="grab"></div><div id="sheet-body"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   Barista shift calendar — Telegram Mini App, wired to the FastAPI /miniapp routes.
+   Served from python/api/barista_calendar.html. Opened directly (outside Telegram)
+   or if a request fails, it falls back to DEMO data so it always previews.
+
+   ── DATA CONTRACT (what the front end sends / expects) ───────────────────────
+   Every request carries the header  X-Init-Data: <tg.initData>  — the backend
+   validates its HMAC and resolves the barista. If your endpoints return different
+   shapes, there is ONE place to reconcile: the api*() calls below + normalize().
+
+   GET /miniapp/schedule?from=YYYY-MM-DD&to=YYYY-MM-DD  →
+     {
+       "me": "Greta",                       // or {"first_name":"Greta"}
+       "published_through": "2026-07-05",    // last rostered date (string)
+       "lock_days": 5,
+       "shifts": [                           // every shift in [from,to], all baristas
+         {"date":"2026-06-24","label":"Opening","start":"08:00","end":"14:00",
+          "barista":"Greta","mine":true},
+         {"date":"2026-06-24","label":"Mid","start":"11:00","end":"17:00",
+          "barista":"Tomas","mine":false}
+       ],
+       "availability": {"2026-07-10": true},          // optional, date→bool
+       "swaps_in":  [{"id":"7","from":"Tomas","date":"2026-06-29",            // one-way COVER request —
+                      "label":"Mid","start":"11:00","end":"17:00"}],          //   'from' asks the caller to cover this shift
+       "swaps_out": [{"id":"9","date":"2026-06-30","label":"Opening","start":"08:00","end":"14:00",
+                      "to":"Eva","status":"pending"}]
+     }
+
+   POST /miniapp/availability   body {"date":"2026-07-10","available":true}   (409 if locked)
+   POST /miniapp/swap           body {"date":"2026-06-30","to_barista":"Eva"}
+   POST /miniapp/swap/{id}       body {"action":"accept"}  |  {"action":"decline"}
+   ════════════════════════════════════════════════════════════════════════════ */
+const tg = window.Telegram?.WebApp;
+const inTG = !!(tg && tg.initDataUnsafe && tg.initDataUnsafe.user);
+// DEV: opening with ?dev=1 exercises the live backend path in a plain browser,
+// pairing with the server-side MINIAPP_DEV_USER bypass so you can see real data
+// render without Telegram. Inert in Telegram (inTG already true) and in production
+// (without the bypass the API 401s and the page falls back to demo).
+const DEV = /[?&]dev=1(&|$)/.test(location.search);
+const LIVE = inTG || DEV;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+function haptic(kind){ try{
+  if(kind==='success') tg.HapticFeedback.notificationOccurred('success');
+  else if(kind==='warning') tg.HapticFeedback.notificationOccurred('warning');
+  else tg.HapticFeedback.impactOccurred(kind||'light');
+}catch(e){} }
+const INIT = tg ? tg.initData : '';
+let ME = inTG ? [tg.initDataUnsafe.user.first_name, tg.initDataUnsafe.user.last_name].filter(Boolean).join(' ') : 'Greta Kazlauskaitė';
+let MY_FIRST = ME.split(' ')[0];
+
+/* ── api helper ──────────────────────────────────────────────────────────── */
+async function api(path, opts={}){
+  const headers = Object.assign({'X-Init-Data': INIT}, opts.headers||{});
+  if (opts.body) headers['Content-Type']='application/json';
+  const r = await fetch(path, Object.assign({}, opts, {headers}));
+  if (!r.ok){ const e=new Error('HTTP '+r.status); e.status=r.status; throw e; }
+  return r.status===204 ? {} : r.json();
+}
+
+/* ── date helpers ────────────────────────────────────────────────────────── */
+const MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOW_S=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function midnight(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+const TODAY = midnight(new Date());
+function daysFrom(d){ return Math.round((midnight(d)-TODAY)/86400000); }
+function pad(n){ return String(n).padStart(2,'0'); }
+function key(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function parseKey(s){ const [Y,M,D]=String(s).split('-').map(Number); return new Date(Y,M-1,D); }
+function fmtDay(d){ return `${DOW_S[(d.getDay()+6)%7]} ${d.getDate()} ${MON[d.getMonth()].slice(0,3)}`; }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function mondayOf(d){ return addDays(midnight(d), -((d.getDay()+6)%7)); }
+function daypart(start){ const h=parseInt(String(start),10)||0; return h<11?'open':h<15?'mid':'close'; }
+function startHr(start){ return pad(parseInt(String(start),10)||0); }
+
+/* ── STORE (filled from API or demo) ─────────────────────────────────────── */
+const STORE = {
+  shifts:new Map(), availability:{}, swapsIn:[], swapsOut:[],
+  publishedThrough:addDays(TODAY,13), lockDays:5,
+};
+function isUnpublished(d){ return daysFrom(d) > daysFrom(STORE.publishedThrough); }
+function isPast(d){ return daysFrom(d) < 0; }
+function isLocked(d){ const n=daysFrom(d); return n>=0 && n<STORE.lockDays; }
+function myShift(d){ const e=STORE.shifts.get(key(d)); return e?e.mine:null; }
+function teamFor(d){ const e=STORE.shifts.get(key(d)); return e?e.team:null; }
+
+function normalize(d){
+  ME = (d.me && d.me.first_name) || d.me || ME; MY_FIRST = ME.split(' ')[0];
+  STORE.publishedThrough = d.published_through ? parseKey(d.published_through) : STORE.publishedThrough;
+  STORE.lockDays = (d.lock_days ?? STORE.lockDays);
+  STORE.availability = d.availability || {};
+  const map = new Map();
+  (d.shifts||[]).forEach(s=>{
+    if(!map.has(s.date)) map.set(s.date,{mine:null,team:[]});
+    const o={label:s.label,start:s.start,end:s.end,barista:s.barista};
+    if(s.mine) map.get(s.date).mine=o; else map.get(s.date).team.push(o);
+  });
+  for(const [k,v] of map){ v.team.sort((a,b)=>String(a.start).localeCompare(String(b.start))); STORE.shifts.set(k,v); }
+  STORE.swapsIn = (d.swaps_in||[]).map(x=>({id:x.id, from:x.from,
+    date:parseKey(x.date), slot:{label:x.label, start:x.start, end:x.end}}));   // one-way cover
+  STORE.swapsOut = (d.swaps_out||[]).map(x=>({id:x.id,date:parseKey(x.date),
+    slot:{label:x.label,start:x.start,end:x.end}, to:x.to, status:x.status}));
+}
+
+/* ── demo data (fallback, deterministic relative to today) ───────────────── */
+const DEMO_SLOTS={OPEN:{label:'Opening',start:'08:00',end:'14:00'},MID:{label:'Mid',start:'11:00',end:'17:00'},CLOSE:{label:'Close',start:'15:00',end:'21:00'}};
+const DEMO_TEAM=[MY_FIRST,'Tomas','Mindaugas','Eva'];
+const demoAvail={};
+let demoSwapsOut=[];
+function demoMyKey(d){ if(daysFrom(d)>13) return null; const wd=d.getDay(); return wd===2?'OPEN':wd===4?'MID':wd===6?'CLOSE':null; }
+let demoSwapsIn=[{id:'s1', from:'Tomas', date:addDays(TODAY,4), slot:'MID'}];   // Tomas asks you to cover this shift
+function buildDemo(fromD,toD){
+  ME='Greta Kazlauskaitė'; MY_FIRST='Greta';
+  STORE.publishedThrough=addDays(TODAY,13); STORE.lockDays=5; STORE.availability=demoAvail;
+  const others=DEMO_TEAM.filter(n=>n!=='Greta');
+  for(let d=new Date(fromD); d<=toD; d=addDays(d,1)){
+    if(daysFrom(d)>13){ continue; }
+    const mineK=demoMyKey(d); const idx=Math.round(midnight(d)/86400000);
+    const cover=['OPEN','MID','CLOSE'].filter(s=>s!==mineK);
+    const entry={mine:null,team:[]};
+    if(mineK){ const s=DEMO_SLOTS[mineK]; entry.mine={label:s.label,start:s.start,end:s.end,barista:'Greta'}; }
+    cover.forEach((sl,i)=>{ const s=DEMO_SLOTS[sl]; entry.team.push({label:s.label,start:s.start,end:s.end,barista:others[(idx+i)%others.length]}); });
+    entry.team.sort((a,b)=>a.start.localeCompare(b.start));
+    STORE.shifts.set(key(d),entry);
+  }
+  STORE.swapsIn=demoSwapsIn.map(s=>({id:s.id, from:s.from, date:s.date, slot:DEMO_SLOTS[s.slot]}));
+  STORE.swapsOut=demoSwapsOut.map(s=>({id:s.id,date:s.date,slot:DEMO_SLOTS[s.slot],to:s.to,status:s.status}));
+}
+
+/* ── load a date range into STORE (live or demo) ─────────────────────────── */
+async function loadView(fromD, toD){
+  if(LIVE){
+    try{ normalize(await api(`/miniapp/schedule?from=${key(fromD)}&to=${key(toD)}`)); return; }
+    catch(e){ console.warn('schedule fetch failed → demo', e); }
+  }
+  buildDemo(fromD, toD);
+}
+
+/* ── header ──────────────────────────────────────────────────────────────── */
+function renderHeader(){
+  document.getElementById('hi-name').textContent='Hi, '+MY_FIRST;
+  document.getElementById('demo-pill').style.display = LIVE ? 'none':'inline-block';
+  let n=0; const m=TODAY.getMonth(), y=TODAY.getFullYear();
+  for(let day=1; day<=31; day++){ const d=new Date(y,m,day); if(d.getMonth()!==m) break; if(myShift(d)) n++; }
+  document.getElementById('hi-stat').textContent=`${n*6}h · ${n} shift${n===1?'':'s'} this month`;
+  let nx=null; for(let i=0;i<60;i++){ const d=addDays(TODAY,i); if(myShift(d)){ nx=d; break; } }
+  const el=document.getElementById('hi-next');
+  if(nx){ const df=daysFrom(nx), s=myShift(nx), when=df===0?'today':df===1?'tomorrow':fmtDay(nx);
+    el.style.display='block'; el.innerHTML=`Next up: <b>${when}</b> · ${esc(s.label)} ${esc(s.start)}–${esc(s.end)}`;
+  } else el.style.display='none';
+  const b=document.getElementById('swap-bdg');
+  if(STORE.swapsIn.length){ b.style.display='inline-block'; b.textContent=STORE.swapsIn.length; } else b.style.display='none';
+}
+
+/* ── month ───────────────────────────────────────────────────────────────── */
+let viewMonth=TODAY.getMonth(), viewYear=TODAY.getFullYear();
+async function renderMonth(){
+  const first=new Date(viewYear,viewMonth,1);
+  const startOff=(first.getDay()+6)%7;
+  const gridStart=addDays(first,-startOff);
+  await loadView(gridStart, addDays(gridStart,41));
+  document.getElementById('banner').textContent=`Roster posted through ${fmtDay(STORE.publishedThrough)}`;
+  let html=`<div class="mnav"><button class="arw" id="pm">‹</button><b>${MON[viewMonth]} ${viewYear}</b><button class="arw" id="nm">›</button></div>
+    <div class="dow">${['M','T','W','T','F','S','S'].map(x=>`<span>${x}</span>`).join('')}</div><div class="grid">`;
+  let cur=new Date(gridStart);
+  for(let i=0;i<42;i++){
+    const d=new Date(cur), inMonth=d.getMonth()===viewMonth, s=myShift(d);
+    let cls='cell'; if(!inMonth) cls+=' dim'; else if(isUnpublished(d)) cls+=' future';
+    if(daysFrom(d)===0) cls+=' today';
+    const lock = inMonth && isLocked(d) && !s ? '<span class="lockdot"></span>':'';
+    const mk = inMonth && s ? `<div class="mk ${daypart(s.start)}">${startHr(s.start)}</div>`:'';
+    html+=`<div class="${cls}" data-d="${key(d)}"><span class="dn">${d.getDate()}</span>${lock}${mk}</div>`;
+    cur=addDays(cur,1);
+  }
+  html+=`</div><div class="legend"><span><i class="sw open"></i>Morning</span><span><i class="sw mid"></i>Midday</span><span><i class="sw close"></i>Evening</span></div>`;
+  const v=document.getElementById('view'); v.innerHTML=html;
+  document.getElementById('pm').onclick=()=>{ if(--viewMonth<0){viewMonth=11;viewYear--;} haptic('light'); renderMonth(); };
+  document.getElementById('nm').onclick=()=>{ if(++viewMonth>11){viewMonth=0;viewYear++;} haptic('light'); renderMonth(); };
+  v.querySelectorAll('.cell:not(.dim)').forEach(c=>c.onclick=()=>openDay(c.dataset.d));
+}
+
+/* ── week ────────────────────────────────────────────────────────────────── */
+let weekStart=mondayOf(TODAY);
+async function renderWeek(){
+  await loadView(weekStart, addDays(weekStart,6));
+  document.getElementById('banner').textContent='';
+  const end=addDays(weekStart,6);
+  let html=`<div class="mnav"><button class="arw" id="pw">‹</button><b>${weekStart.getDate()} ${MON[weekStart.getMonth()].slice(0,3)} – ${end.getDate()} ${MON[end.getMonth()].slice(0,3)}</b><button class="arw" id="nw">›</button></div><div class="wk">`;
+  for(let i=0;i<7;i++){
+    const d=addDays(weekStart,i), s=myShift(d), t=teamFor(d), others=t?t.length:0;
+    let cls='wrow '+(s?daypart(s.start):'off')+(daysFrom(d)===0?' today':'');
+    let body;
+    if(isUnpublished(d)) body=`<div class="t1 offlbl">Not rostered yet</div>`;
+    else if(s) body=`<div class="t1">${esc(s.label)}</div><div class="t2">${esc(s.start)}–${esc(s.end)}</div>${others?`<div class="t3">with ${others} other${others===1?'':'s'}</div>`:''}`;
+    else body=`<div class="t1 offlbl">Off</div>${others?`<div class="t3">${others} on shift</div>`:''}`;
+    html+=`<div class="${cls}" data-d="${key(d)}"><div class="wd"><div class="d1">${DOW_S[i]}</div><div class="d2">${d.getDate()}</div></div><div class="wbody">${body}</div></div>`;
+  }
+  html+=`</div>`;
+  const v=document.getElementById('view'); v.innerHTML=html;
+  document.getElementById('pw').onclick=()=>{ weekStart=addDays(weekStart,-7); haptic('light'); renderWeek(); };
+  document.getElementById('nw').onclick=()=>{ weekStart=addDays(weekStart,7); haptic('light'); renderWeek(); };
+  v.querySelectorAll('.wrow').forEach(r=>r.onclick=()=>openDay(r.dataset.d));
+}
+
+/* ── swaps ───────────────────────────────────────────────────────────────── */
+async function renderSwaps(){
+  await loadView(TODAY, addDays(TODAY,13));   // ensure swaps are fresh
+  document.getElementById('banner').textContent='';
+  let html=`<div class="sec">Asked of you</div>`;
+  if(STORE.swapsIn.length){
+    STORE.swapsIn.forEach(s=>{
+      html+=`<div class="swapcard"><div class="who">${esc(s.from)} wants you to cover</div>
+        <div class="trade"><span class="chip ${daypart(s.slot.start)}">${fmtDay(s.date)} · ${esc(s.slot.label)} ${esc(s.slot.start)}–${esc(s.slot.end)}</span></div>
+        <div class="acts"><button class="pri" data-ok="${esc(s.id)}">Accept</button><button class="danger" data-no="${esc(s.id)}">Decline</button></div></div>`;
+    });
+  } else html+=`<div class="empty"><div class="e1">No requests</div><div class="e2">Nothing waiting on you right now.</div></div>`;
+  html+=`<div class="sec" style="margin-top:18px">Your requests</div>`;
+  if(STORE.swapsOut.length){
+    STORE.swapsOut.forEach(s=>{ html+=`<div class="outrow"><span>${fmtDay(s.date)} · ${esc(s.slot.label)} → ${esc(s.to)}</span><span class="pend">${esc(s.status)}</span></div>`; });
+  } else html+=`<div class="note">When you ask someone to cover a shift, it'll show here until they reply.</div>`;
+  const v=document.getElementById('view'); v.innerHTML=html;
+  v.querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>resolveSwap(b.dataset.ok,true));
+  v.querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>resolveSwap(b.dataset.no,false));
+}
+
+/* ── day sheet ───────────────────────────────────────────────────────────── */
+function openDay(k){
+  const d=parseKey(k), s=myShift(d), t=teamFor(d), body=document.getElementById('sheet-body');
+  let html=`<div class="sh-date">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]}, ${d.getDate()} ${MON[d.getMonth()]}</div>`;
+  if(isUnpublished(d)){
+    html+=`<div class="sh-main">Not rostered yet</div>`;
+    if(daysFrom(d)>=STORE.lockDays){
+      const a=STORE.availability[k];
+      html+=`<div class="qline">Can you work this day?</div><div class="acts">
+        <button class="ghost ${a===true?'on':''}" data-av="yes">I can work</button>
+        <button class="ghost no ${a===false?'on':''}" data-av="no">Can't make it</button></div>
+        <div class="note">Tell us early and the schedule will try to fit around you. You can change this until ${STORE.lockDays} days before.</div>`;
+    } else html+=`<div class="note">Next week's roster isn't posted yet — you'll get a ping the moment it is.</div>`;
+  } else if(s){
+    html+=`<div class="sh-main"><span class="pin ${daypart(s.start)}"></span>You're on — ${esc(s.label)}</div><div class="sh-time">${esc(s.start)}–${esc(s.end)}</div>`;
+  } else html+=`<div class="sh-main">You're off ☕</div>`;
+  if(t && t.length){
+    html+=`<div class="team"><div class="lbl">${s?'Also on shift':'On shift'}</div>`;
+    t.forEach(o=>{ const me=o.barista===MY_FIRST;
+      html+=`<div class="tm"><div class="av ${me?'me':''}">${esc(initials(o.barista))}</div><div class="nm">${esc(o.barista)}${me?' <span class="youtag">(you)</span>':''}</div><div class="ss">${esc(o.label)} · ${esc(o.start)}</div></div>`; });
+    html+=`</div>`;
+  }
+  if(s && !isPast(d)) html+=`<div class="acts"><button class="pri dusk" data-swap="${k}">Request a swap</button></div>`;
+  body.innerHTML=html; openSheet();
+  body.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>setAvail(k,b.dataset.av==='yes'));
+  const sw=body.querySelector('[data-swap]'); if(sw) sw.onclick=()=>openSwapPicker(k);
+}
+
+async function setAvail(k, yes){
+  try{
+    if(LIVE) await api('/miniapp/availability',{method:'POST',body:JSON.stringify({date:k,available:yes})});
+    else demoAvail[k]=yes;
+    haptic('success'); toast(yes?'Marked available':'Marked unavailable');
+    await refreshActive(); openDay(k);
+  }catch(err){
+    if(err.status===409){ haptic('warning'); toast(`That day is locked (within ${STORE.lockDays} days)`); }
+    else { haptic('warning'); toast("Couldn't save — try again"); }
+  }
+}
+
+/* ── swap picker ─────────────────────────────────────────────────────────── */
+function openSwapPicker(k){
+  const d=parseKey(k), s=myShift(d), body=document.getElementById('sheet-body');
+  const mates=new Set();
+  for(let i=-3;i<=10;i++){ const t=teamFor(addDays(d,i)); if(t) t.forEach(o=>{ if(o.barista!==MY_FIRST) mates.add(o.barista); }); }
+  const list=[...mates]; if(!list.length) ['Tomas','Mindaugas','Eva'].forEach(n=>list.push(n));
+  let html=`<div class="sh-date">Swap request</div><div class="qline">Cover your ${esc(s.label.toLowerCase())} on ${fmtDay(d)}?</div><div class="sh-time">${esc(s.start)}–${esc(s.end)}</div><div class="qline">Ask a teammate</div><div class="picklist">`;
+  list.forEach(n=>{ html+=`<div class="pick" data-to="${esc(n)}"><div class="av">${esc(initials(n))}</div><div class="nm">${esc(n)}</div><div class="ss">tap to ask →</div></div>`; });
+  html+=`</div>`;
+  body.innerHTML=html;
+  body.querySelectorAll('[data-to]').forEach(p=>p.onclick=()=>sendSwap(k,p.dataset.to));
+}
+async function sendSwap(k, to){
+  const d=parseKey(k), s=myShift(d);
+  try{
+    if(LIVE) await api('/miniapp/swap',{method:'POST',body:JSON.stringify({date:k,to_barista:to})});
+    else demoSwapsOut.unshift({id:'o'+Date.now(),date:d,slot:demoMyKey(d),to,status:'pending'});
+    haptic('success'); closeSheet(); toast(`Swap request sent to ${to}`);
+    await refreshActive();
+  }catch(err){ haptic('warning'); toast("Couldn't send — try again"); }
+}
+async function resolveSwap(id, accept){
+  try{
+    if(LIVE) await api(`/miniapp/swap/${encodeURIComponent(id)}`,{method:'POST',body:JSON.stringify({action:accept?'accept':'decline'})});
+    else demoSwapsIn=demoSwapsIn.filter(s=>s.id!==id);
+    haptic(accept?'success':'warning'); toast(accept?'Swap accepted — roster updated':'Swap declined');
+    await refreshActive();
+  }catch(err){ haptic('warning'); toast("Couldn't update — try again"); }
+}
+
+/* ── plumbing ────────────────────────────────────────────────────────────── */
+async function refreshActive(){
+  if(activeTab==='month') await renderMonth();
+  else if(activeTab==='week') await renderWeek();
+  else await renderSwaps();
+  renderHeader();
+}
+const scrim=document.getElementById('scrim'), sheet=document.getElementById('sheet');
+function openSheet(){ scrim.classList.add('show'); sheet.classList.add('show'); }
+function closeSheet(){ scrim.classList.remove('show'); sheet.classList.remove('show'); }
+scrim.onclick=closeSheet;
+let tt; function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('show'),2200); }
+function esc(s){const x=document.createElement('div');x.textContent=s==null?'':String(s);return x.innerHTML;}
+function initials(n){const p=String(n).trim().split(/\s+/);return ((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase();}
+
+let activeTab='month';
+document.querySelectorAll('.tab').forEach(t=>t.onclick=async()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on'); activeTab=t.dataset.tab; haptic('light');
+  if(activeTab==='month') await renderMonth();
+  else if(activeTab==='week') await renderWeek();
+  else await renderSwaps();
+});
+
+/* ── boot ────────────────────────────────────────────────────────────────── */
+(async function boot(){
+  const first=new Date(viewYear,viewMonth,1);
+  await loadView(addDays(first,-7), addDays(TODAY,60));   // covers month grid + next-shift lookahead
+  renderHeader();
+  await renderMonth();
+})();
+</script>
+</body>
+</html>
