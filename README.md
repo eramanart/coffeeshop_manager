@@ -1,8 +1,10 @@
-# CoffeeManager-OS
+# CoffeeManager_bot
 
 A compliance-and-operations automation system for a single independent coffee shop in Vilnius, Lithuania. It reconciles daily fiscal records against the Lithuanian tax authority's register, drafts monthly VAT (i.SAF) and new-hire (Sodra) filings for owner e-signature, processes supplier invoices via OCR, and handles barista scheduling — coordinated through a FastAPI dashboard and a Telegram bot, with an LLM agent confined to navigating government web portals.
 
 > **Status: Frozen (pre-live).** This project is archived as a portfolio piece at a deliberate stopping point. It was never put into live production. The compliance logic is implemented but **has never been validated against real transaction data** — see [Status & Limitations](#status--limitations) below. This document is written to be accurate rather than flattering; the limitations are part of what the project demonstrates.
+<img width="1584" height="1232" alt="Manager_OS" src="https://github.com/user-attachments/assets/892329f2-e494-40a9-a648-7e8f76d31402" />
+<img width="1584" height="1232" alt="Telegram mini_app" src="https://github.com/user-attachments/assets/ef08abe1-a80d-47a3-a517-5815de3ef801" />
 
 ---
 
